@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MunimJi Admin — Listing Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/admin.css">
+<script src="assets/js/admin.js" defer></script>
+</head>
+<body>
+
+<!-- ══ LOGIN SCREEN ══ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-mark"><img src="assets/img/logo.png" alt="MunimJi Logo" onerror="this.parentElement.innerHTML='🏠'"></div>
+      <div class="login-logo-text">Munim<span>Ji</span></div>
+    </div>
+    <div class="login-title">Admin Login</div>
+    <div class="login-sub">Enter your password to access the listing manager</div>
+    <div class="login-err" id="loginErr">⚠️ <span id="loginErrMsg">Incorrect password. Try again.</span></div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">🔐 Login to Admin Panel</button>
+    <div class="login-attempts" id="loginAttempts"></div>
+    <div class="login-footer">MunimJi · Property & Finance · Wardha</div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="hlogo">
+    <div class="hlogo-mark"><img src="assets/img/logo.png" alt="MunimJi Logo" onerror="this.parentElement.innerHTML='🏠'"></div>
+    <div>
+      <div class="hlogo-text">Munim<span>Ji</span> Admin</div>
+      <div class="hlogo-sub">Listing Manager</div>
+    </div>
+  </div>
+  <div class="hright">
+    <span style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:rgba(255,255,255,0.7)">
+      <span class="sync-dot"></span> Live from Google Sheet
+    </span>
+    <a href="https://docs.google.com/spreadsheets/d/1mzzjWv42eHxa36-4lju_F9-zAAHhe7cYp-Lw0v-Omk8/edit?usp=sharing" target="_blank" rel="noopener" class="hbtn hbtn-ghost">📊 Open Sheet</a>
+    <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vRYr7lBTGHF-RSTgwJlAbbP_8tPTkI46mcFxieA_ZMArVTydOZXT8XPWc5-WVfXjKy3S3MLuXzUAqzV/pubhtml?gid=1846328953&single=true" target="_blank" rel="noopener" class="hbtn" style="background:rgba(231,76,60,0.15);color:#ffaaaa;border:1px solid rgba(231,76,60,0.3)">📋 Enquiries</a>
+    <button class="hbtn hbtn-green" onclick="openAddModal()">＋ Add Listing</button>
+    <button class="hbtn" onclick="doLogout()" style="background:rgba(192,57,43,0.18);color:#ffaaaa;border:1px solid rgba(192,57,43,0.3)">🔒 Logout</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- STATS -->
+  <div class="stats" id="statsRow">
+    <div class="stat"><div class="stat-n" id="s-total">—</div><div class="stat-l">Total Listings</div></div>
+    <div class="stat"><div class="stat-n" id="s-active">—</div><div class="stat-l">Active / For Sale</div><div class="stat-change up" id="s-active-lbl"></div></div>
+    <div class="stat"><div class="stat-n" id="s-sold">—</div><div class="stat-l">Sold</div></div>
+    <div class="stat"><div class="stat-n" id="s-hot">—</div><div class="stat-l">Hot / Premium</div><div class="stat-change warn" id="s-hot-lbl"></div></div>
+  </div>
+
+  <!-- QUICK ACTIONS -->
+  <div class="quick-card">
+    <div class="quick-title">Quick Actions</div>
+    <div class="quick-grid">
+      <button class="quick-btn" onclick="openAddModal()">
+        <span class="quick-ico">➕</span>
+        <span class="quick-lbl">Add New Listing</span>
+      </button>
+      <a href="https://docs.google.com/spreadsheets/d/1mzzjWv42eHxa36-4lju_F9-zAAHhe7cYp-Lw0v-Omk8/edit?usp=sharing" target="_blank" class="quick-btn">
+        <span class="quick-ico">✏️</span>
+        <span class="quick-lbl">Edit in Google Sheet</span>
+      </a>
+      <button class="quick-btn" onclick="reloadListings()">
+        <span class="quick-ico">🔄</span>
+        <span class="quick-lbl">Refresh Listings</span>
+      </button>
+      <a href="index.html" target="_blank" class="quick-btn">
+        <span class="quick-ico">🌐</span>
+        <span class="quick-lbl">Preview Website</span>
+      </a>
+      <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vRYr7lBTGHF-RSTgwJlAbbP_8tPTkI46mcFxieA_ZMArVTydOZXT8XPWc5-WVfXjKy3S3MLuXzUAqzV/pubhtml?gid=1846328953&single=true" target="_blank" class="quick-btn">
+        <span class="quick-ico">📋</span>
+        <span class="quick-lbl">View Enquiries</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- LISTINGS TABLE -->
+  <div class="sec-head">
+    <div>
+      <div class="sec-title">All Listings</div>
+      <div class="sec-sub">Loaded live from your Google Sheet</div>
+    </div>
+    <button class="btn btn-primary" onclick="openAddModal()">＋ Add New</button>
+  </div>
+
+  <div class="listings-wrap">
+    <div class="listings-toolbar">
+      <input class="search-input" id="searchInput" placeholder="🔍  Search by name, location, price..." oninput="filterTable()">
+      <select class="filter-select" id="filterType" onchange="filterTable()">
+        <option value="">All Types</option>
+        <option>Residential House</option>
+        <option>Agricultural Land</option>
+        <option>Farm Land</option>
+        <option>Solar Farm Land</option>
+        <option>NA Plot</option>
+        <option>Commercial</option>
+      </select>
+      <select class="filter-select" id="filterStatus" onchange="filterTable()">
+        <option value="">All Status</option>
+        <option>For Sale</option>
+        <option>Premium</option>
+        <option>Layout</option>
+        <option>Sold</option>
+      </select>
+      <span class="listings-count" id="listingsCount">Loading...</span>
+    </div>
+    <div id="tableWrap">
+      <div class="tbl-loading"><div class="spinner"></div> Loading listings from sheet...</div>
+    </div>
+  </div>
+
+</div><!-- end wrap -->
+
+<!-- ══ ADD / EDIT MODAL ══ -->
+<div class="overlay" id="addModal" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">Add New Listing</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- AI PASTE ZONE -->
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--g1);margin-bottom:8px">✨ Paste WhatsApp Post — AI fills everything</div>
+      <div class="paste-zone">
+        <textarea id="pasteRaw" placeholder="Paste your WhatsApp property post here and click Extract...&#10;&#10;Example:&#10;🏡 2 Acre Agriculture Land&#10;At. Raifuli Tah.Hinganghat&#10;💰 ₹42 Lakh Total..."></textarea>
+        <div class="paste-actions">
+          <button class="ai-btn" id="aiBtn" onclick="aiExtract()">⚡ Extract Fields</button>
+          <span class="ai-hint" id="aiStatus">Paste text above then click Extract</span>
+        </div>
+      </div>
+
+      <div class="divider-line"></div>
+
+      <!-- MANUAL FIELDS -->
+      <div class="fg-row">
+        <div class="fg">
+          <label>Property Name *</label>
+          <input id="fName" type="text" placeholder="e.g. 2 Acre Land – Hinganghat">
+        </div>
+        <div class="fg">
+          <label>Price *</label>
+          <input id="fPrice" type="text" placeholder="₹42 Lakh">
+        </div>
+      </div>
+
+      <div class="fg-row">
+        <div class="fg">
+          <label>Location *</label>
+          <input id="fLocation" type="text" placeholder="Village, Taluka, District">
+        </div>
+        <div class="fg">
+          <label>Type *</label>
+          <select id="fType">
+            <option value="">Select Type</option>
+            <option>Residential House</option>
+            <option>Agricultural Land</option>
+            <option>Farm Land</option>
+            <option>Solar Farm Land</option>
+            <option>NA Plot</option>
+            <option>Commercial</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="fg-row3">
+        <div class="fg">
+          <label>Size / Area</label>
+          <input id="fSize" type="text" placeholder="2 Acres / 1200 sq.ft">
+        </div>
+        <div class="fg">
+          <label>Status</label>
+          <select id="fStatus">
+            <option>For Sale</option>
+            <option>Premium</option>
+            <option>Layout</option>
+            <option>Sold</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Tag / Badge</label>
+          <select id="fTag">
+            <option value="">None</option>
+            <option>HOT</option>
+            <option>NEW</option>
+            <option>PREMIUM</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label>BHK (houses only)</label>
+        <input id="fBHK" type="text" placeholder="3 BHK">
+      </div>
+
+      <div class="fg">
+        <label>Property Details / WhatsApp Post <span style="font-weight:400;opacity:0.5;text-transform:none;letter-spacing:0">(shown on detail page exactly as written)</span></label>
+        <textarea id="fRaw" rows="7" placeholder="Paste your full WhatsApp post here...&#10;&#10;🏡 Khet Mein Farmhouse Ka Sapna&#10;At. Raifuli Tah.Hinganghat&#10;🔥 Dambar Road Touch Agriculture Land&#10;📏 Total Area: 2 Acre&#10;💰 Rate: ₹21 Lakh / Acre..."></textarea>
+        <span class="field-hint">✅ This text appears on the property detail page — emojis, lines, map links all formatted automatically</span>
+      </div>
+
+      <div class="fg">
+        <label>WhatsApp Message <span style="font-weight:400;opacity:0.5">(sent to you when customer clicks enquire)</span></label>
+        <textarea id="fWA" rows="3" placeholder="Hi MunimJi! I am interested in..."></textarea>
+        <span class="field-hint">Leave blank to auto-generate from property name & location</span>
+      </div>
+
+      <!-- COPY ROW STRIP -->
+      <div class="copy-strip" id="copyStrip" style="display:none">
+        <div class="copy-strip-label">📋 Ready — Copy this row into Google Sheet</div>
+        <div class="copy-preview" id="copyPreview">—</div>
+        <button class="copy-full-btn" id="copyFullBtn" onclick="copyRow()">
+          📋 Copy Row → Paste in Google Sheet (Ctrl+V)
+        </button>
+        <div style="font-size:0.68rem;color:var(--muted);margin-top:8px;text-align:center">Open your Google Sheet → click the next empty row → press Ctrl+V (or Cmd+V)</div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-outline" onclick="triggerManualCopy()">📋 Generate Row (Copy)</button>
+      <button class="btn btn-primary" id="submitBtn" onclick="generateRow()">✓ Save to Sheet</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+</body>
+</html>
